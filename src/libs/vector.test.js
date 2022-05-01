@@ -1,8 +1,8 @@
 import {
   add, angleBetween, component, cross,
   distance, dot, faceTo2d,
-  length,
-  multiply, normal,
+  length, linearCombination, matrixMultiply,
+  multiply, multiplyMatrixVector, normal,
   perimeter,
   rotate,
   scale,
@@ -73,31 +73,54 @@ test('dot product', () => {
 });
 
 test('angle between vectors', () => {
-  expect(angleBetween([1,2,2], [2,2,1])).toBe(0.47588224966041665);
-})
+  expect(angleBetween([1, 2, 2], [2, 2, 1])).toBe(0.47588224966041665);
+});
 
 test('cross production', () => {
-  expect(cross([1,0,0], [0,1,0])).toStrictEqual([0,0,1]);
-  expect(cross([0,2,0], [0,0,-2])).toStrictEqual([-4,0,0]);
-})
+  expect(cross([1, 0, 0], [0, 1, 0])).toStrictEqual([0, 0, 1]);
+  expect(cross([0, 2, 0], [0, 0, -2])).toStrictEqual([-4, 0, 0]);
+});
 
 test('extract component', () => {
-  expect(component([1,0,0], [1,0,0])).toBe(1)
-})
+  expect(component([1, 0, 0], [1, 0, 0])).toBe(1);
+});
 
 test('flatten 3d vector to plane', () => {
-  expect(vectorTo2d([1,2,3], [1, 0, 0], [0, 1, 0])).toStrictEqual([1,2])
-})
+  expect(vectorTo2d([1, 2, 3], [1, 0, 0], [0, 1, 0])).toStrictEqual([1, 2]);
+});
 
 test('project 3d face on 2d surface', () => {
-  expect(faceTo2d([[1,0,0], [0, 1, 0], [0, 0, 1]])).toStrictEqual([[1,0], [0,1], [0,0]])
-})
+  expect(faceTo2d([[1, 0, 0], [0, 1, 0], [0, 0, 1]])).toStrictEqual([[1, 0], [0, 1], [0, 0]]);
+});
 
 test('unit vector', () => {
   expect(unit([1, 1, 1])).toStrictEqual([0.5773502691896258, 0.5773502691896258, 0.5773502691896258]);
-})
+});
 
 test('normal from face', () => {
-  expect(normal([[1, 0, 0], [0, 1, 0], [0, 0, 1]])).toStrictEqual([1, 1, 1])
-})
+  expect(normal([[1, 0, 0], [0, 1, 0], [0, 0, 1]])).toStrictEqual([1, 1, 1]);
+});
 
+test('linear combination', () => {
+  expect(linearCombination([1, 2, 3], [1, 0, 0], [0, 1, 0], [0, 0, 1]))
+    .toStrictEqual([1, 2, 3]);
+  expect(linearCombination([3, -2, 5], [0, 0, 1], [2, 1, 0], [1, 0, -1]))
+    .toStrictEqual([1, -2, -2]);
+});
+
+test('vector by matrix multiplication', () => {
+  const B = [
+    [0, 2, 1],
+    [0, 1, 0],
+    [1, 0, -1],
+  ];
+  const v = [3, -2, 5];
+  expect(multiplyMatrixVector(B, v)).toStrictEqual([1, -2, -2]);
+});
+
+test('matrix by matrix multiplication', () => {
+  expect(matrixMultiply([[1, 1, 0], [1, 0, 1], [1, -1, 1]], [[0, 2, 1], [0, 1, 0], [1, 0, -1]]))
+    .toStrictEqual([[0, 3, 1], [1, 2, 0], [1, 1, 0]]);
+  expect(matrixMultiply([[1, 2], [3, 4]], [[0, -1], [1, 0]]))
+    .toStrictEqual([[2, -1], [4, -3]]);
+});

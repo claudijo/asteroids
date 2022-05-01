@@ -1,7 +1,11 @@
-import { sum } from './array';
+import { sum, zip } from './array';
 
-export const add = (vec1, vec2) => {
-  return vec1.map((n, i) => n + vec2[i]);
+export const add = (...vectors) => {
+  return vectors[0].map((_, i) => {
+    return vectors.reduce((acc, vector) => {
+      return acc + vector[i];
+    }, 0);
+  });
 };
 
 export const subtract = (vec1, vec2) => {
@@ -22,7 +26,7 @@ export const translate = (translation, ...vectors) => {
 
 export const scale = (scalar, ...vectors) => {
   return vectors.map(vector => multiply(scalar, vector));
-}
+};
 
 export const distance = (vec1, vec2) => {
   return length(subtract(vec1, vec2));
@@ -46,23 +50,23 @@ export const toPolar = cartesian => {
   const [x, y] = cartesian;
   const angle = Math.atan2(y, x);
   return [length(cartesian), angle];
-}
+};
 
 export const rotate = (angle, vector) => {
-  const [l, a ] = toPolar(vector);
+  const [l, a] = toPolar(vector);
   return toCartesian([l, a + angle]);
-}
+};
 
 // Measure vector alignment. Used to check if vectors are perpendicular without
 // doing any trigonometry.
 export const dot = (vec1, vec2) => {
   const products = vec1.map((n, i) => n * vec2[i]);
   return sum(...products);
-}
+};
 
 export const angleBetween = (vec1, vec2) => {
   return Math.acos(dot(vec1, vec2) / (length(vec1) * length(vec2)));
-}
+};
 
 // Measuring oriented area. Only meaningful for 3d vectors. Cross product is
 // orientation dependant and helps keeping track of orientation in our
@@ -76,50 +80,67 @@ export const cross = (u, v) => {
   return [
     uy * vz - uz * vy,
     uz * vx - ux * vz,
-    ux * vy - uy * vx
-  ]
-}
+    ux * vy - uy * vx,
+  ];
+};
 
 // extracts the part of any 3D vector pointing in a given direction
 export const component = (vector, direction) => {
   return dot(vector, direction) / length(direction);
-}
+};
 
 export const vectorTo2d = (vector, rightDir = [1, 0, 0], upDir = [0, 1, 0]) => {
   return [
     component(vector, rightDir),
-    component(vector, upDir)
-  ]
-}
+    component(vector, upDir),
+  ];
+};
 
 export const faceTo2d = (face, rightDir = [1, 0, 0], upDir = [0, 1, 0]) => {
   return face.map(vertex => vectorTo2d(vertex, rightDir, upDir));
-}
+};
 
 // takes a vector and returns another in the same direction but with length 1
 export const unit = vector => {
-  return multiply(1 / length(vector), vector)
-}
+  return multiply(1 / length(vector), vector);
+};
 
 // takes a face and gives us a vector perpendicular to it
 export const normal = face => {
-  return cross(subtract(face[1], face[0]), subtract(face[2], face[0]))
-}
+  return cross(subtract(face[1], face[0]), subtract(face[2], face[0]));
+};
 
 export const rotateX = (angle, vector) => {
   const [x, y, z] = vector;
   const [rotatedY, rotatedZ] = rotate(angle, [y, z]);
   return [x, rotatedY, rotatedZ];
-}
+};
 
 export const rotateY = (angle, vector) => {
   const [x, y, z] = vector;
   const [rotatedX, rotatedZ] = rotate(angle, [x, z]);
   return [rotatedX, y, rotatedZ];
-}
+};
 
 export const rotateZ = (angle, vector) => {
   const [x, y, z] = vector;
   const [rotatedX, rotatedY] = rotate(angle, [x, y]);
   return [rotatedX, rotatedY, z];
-}
+};
+
+export const linearCombination = (scalars, ...vectors) => {
+  const scaled = scalars.map((s, i) => multiply(s, vectors[i]));
+  return add(...scaled);
+};
+
+export const multiplyMatrixVector = (matrix, vector) => {
+  return linearCombination(vector, ...zip(...matrix));
+};
+
+export const matrixMultiply = (a, b) => {
+  return a.map(row => {
+    return zip(...b).map(col => {
+      return dot(row, col);
+    });
+  });
+};
