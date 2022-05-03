@@ -1,15 +1,15 @@
 import {
   add, angleBetween, component, cross,
-  distance, dot, faceTo2d,
+  distance, dot, faceTo2d, inferMatrix,
   length, linearCombination, matrixMultiply,
   multiply, multiplyMatrixVector, normal,
   perimeter,
-  rotate,
+  rotate, rotateZ,
   scale,
   subtract,
   toCartesian,
   toPolar,
-  translate, unit, vectorTo2d,
+  translate, translate3d, unit, vectorTo2d,
 } from './vector';
 import dino from '../wireframes/dino.json';
 
@@ -121,6 +121,28 @@ test('vector by matrix multiplication', () => {
 test('matrix by matrix multiplication', () => {
   expect(matrixMultiply([[1, 1, 0], [1, 0, 1], [1, -1, 1]], [[0, 2, 1], [0, 1, 0], [1, 0, -1]]))
     .toStrictEqual([[0, 3, 1], [1, 2, 0], [1, 1, 0]]);
+
   expect(matrixMultiply([[1, 2], [3, 4]], [[0, -1], [1, 0]]))
     .toStrictEqual([[2, -1], [4, -3]]);
+
+  // expect(matrixMultiply([[-1, -1, 0], [-2, 1, 2], [1, 1, 1]], [1,1,1])).toStrictEqual([-2,1,0]);
+
+  // expect(matrixMultiply(
+  //   [[-1, 0, -1, -2, -2], [0, 0, 2, -2, 1], [-2, -1, -2, 0, 1], [0, 2, -2, -1, 0], [1, 1, -1, -1, 0]],
+  //   [[-1, 0, -1, -2, -2], [0, 0, 2, -2, 1], [-2, -1, -2, 0, 1], [0, 2, -2, -1, 0], [1, 1, -1, -1, 0]]
+  // )).toStrictEqual([[-10, -1, 2, -7, 4], [-2, 5, 5, 4, -6], [-1, 1, -4, 2, -2], [-4, -5, -5, -9, 4], [-1, -2, -2, -6, 4]]);
+});
+
+test('translate 3d', () => {
+  expect(translate3d([2, 2, 2], [1, 0, 0])).toStrictEqual([3, 2, 2]);
+});
+
+test('infer matrix', () => {
+  const transformation = angle => vector => rotateZ(angle, vector);
+  expect(inferMatrix(3, transformation(Math.PI / 2)))
+    .toStrictEqual([
+      [6.123233995736766e-17, -1, 0],
+      [1, 1.2246467991473532e-16, 0],
+      [0, 0, 1],
+    ]);
 });

@@ -1,4 +1,4 @@
-import { sum, zip } from './array';
+import { range, sum, zip } from './array';
 
 export const add = (...vectors) => {
   return vectors[0].map((_, i) => {
@@ -144,3 +144,30 @@ export const matrixMultiply = (a, b) => {
     });
   });
 };
+
+export const translate3d = (translation, vector) => {
+  const [a, b, c] = translation;
+  const [x, y, z] = vector;
+  const m = [
+    [1, 0, 0, a],
+    [0, 1, 0, b],
+    [0, 0, 1, c],
+    [0, 0, 0, 1],
+  ];
+  const v = [x,y,z,1];
+  const [xOut, yOut, zOut, _] = multiplyMatrixVector(m, v);
+  return [xOut, yOut, zOut];
+};
+
+export const inferMatrix = (n, transformation) => {
+  const d = range(n);
+
+  const standardBasisVector = d.map(row => {
+    return d.map(col => {
+      return row === col ? 1 : 0;
+    })
+  });
+
+  const cols = standardBasisVector.map(vector => transformation(vector));
+  return zip(...cols);
+}

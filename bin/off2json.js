@@ -7,7 +7,7 @@ let numOfEdges = NaN;
 const vertices = [];
 const faces = [];
 
-const file = 'goblet'
+const file = 'teapot'
 
 try {
   const lines = fs.readFileSync(`./assets/${file}.off`, 'utf8').toString().split('\n');
