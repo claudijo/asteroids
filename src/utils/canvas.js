@@ -20,3 +20,7 @@ export const fillAndStroke = (ctx, appearance) => {
     ctx.stroke();
   }
 }
+
+export const toPixels = (width, height, localWidth, localHeight) => (x, y) => {
+  return [width/2 + width * x / localWidth, height/2 - height * y / localHeight];
+}
