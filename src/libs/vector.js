@@ -154,7 +154,7 @@ export const translate3d = (translation, vector) => {
     [0, 0, 1, c],
     [0, 0, 0, 1],
   ];
-  const v = [x,y,z,1];
+  const v = [x, y, z, 1];
   const [xOut, yOut, zOut, _] = multiplyMatrixVector(m, v);
   return [xOut, yOut, zOut];
 };
@@ -165,9 +165,53 @@ export const inferMatrix = (n, transformation) => {
   const standardBasisVector = d.map(row => {
     return d.map(col => {
       return row === col ? 1 : 0;
-    })
+    });
   });
 
   const cols = standardBasisVector.map(vector => transformation(vector));
   return zip(...cols);
-}
+};
+
+// From https://stackoverflow.com/a/24392281 and https://stackoverflow.com/a/58657254
+// Alternative approach might use https://github.com/lovasoa/linear-solve/blob/master/gauss-jordan.js
+// returns intersection point if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
+export const intersection = (u1, u2, v1, v2) => {
+  const [a, b] = u1;
+  const [c, d] = u2;
+  const [p, q] = v1;
+  const [r, s] = v2;
+  const det = (c - a) * (s - q) - (r - p) * (d - b);
+
+  // Parallel lines
+  if (det === 0) {
+    return null;
+  }
+
+  const lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+  const gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+
+  if ((0 < lambda && lambda < 1) && (0 < gamma && gamma < 1)) {
+    return [
+      a + lambda * (c - a),
+      b + lambda * (d - b),
+    ];
+  }
+
+  return null;
+};
+
+export const doSegmentsIntersect = (s1, s2) => {
+  const [u1, u2] = s1;
+  const [v1, v2] = s2;
+  const d1 = distance(u1, u2);
+  const d2 = distance(v1, v2);
+  const i = intersection(u1, u2, v1, v2);
+  if (i === null) {
+    return false;
+  }
+
+  return distance(u1, i) <= d1 &&
+    distance(u2, i) <= d1 &&
+    distance(v1, i) <= d2 &&
+    distance(v2, i) <= d2;
+};

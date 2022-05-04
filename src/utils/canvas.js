@@ -7,8 +7,18 @@ export const trace = (ctx, polygon) => {
   ctx.closePath();
 }
 
+export const shade = (ctx, appearance) => {
+  const shadowProps = ['shadowBlur', 'shadowColor', 'shadowOffsetX', 'shadowOffsetY'];
+  shadowProps.forEach(prop => {
+    if (prop in appearance) {
+      ctx[prop] = appearance[prop];
+    }
+  })
+}
+
 export const fillAndStroke = (ctx, appearance) => {
   const { fillStyle, strokeStyle, lineWidth } = appearance;
+
   if (fillStyle) {
     ctx.fillStyle = fillStyle;
     ctx.fill();
