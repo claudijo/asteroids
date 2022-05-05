@@ -4,6 +4,8 @@ import Asteroid from './models/asteroid';
 import { randomInt } from './libs/number';
 import stage from './templates/stage';
 import { fillAndStroke, shade, toPixels, trace } from './utils/canvas';
+import { length } from './libs/vector';
+import Bullet from './models/bullet';
 
 const ship = new Ship();
 const asteroidCount = 10;
@@ -14,14 +16,17 @@ let asteroids = range(asteroidCount).map(i => {
   return asteroid;
 });
 
+let bullets = [];
+
 document.body.appendChild(stage('<canvas id=\'game-action-layer\'/>'));
 const canvas = document.getElementById('game-action-layer');
 canvas.setAttribute('height', '400');
 canvas.setAttribute('width', '400');
 
-let isRotatingCounterClockWise = false;
-let isRotatingClockWise = false;
 let isFiringLaser = false;
+let isAccelerating = false;
+let isTurningLeft = false;
+let isTurningRight = false;
 
 window.addEventListener('keydown', event => {
   if (event.repeat) {
@@ -30,13 +35,23 @@ window.addEventListener('keydown', event => {
 
   switch (event.key) {
     case 'ArrowLeft':
-      isRotatingCounterClockWise = true;
+      isTurningLeft = true;
       break;
     case 'ArrowRight':
-      isRotatingClockWise = true;
+      isTurningRight = true;
+      break;
+    case 'ArrowUp':
+      isAccelerating = true;
       break;
     case ' ':
-      isFiringLaser = true;
+      const bullet = new Bullet();
+      [bullet.x, bullet.y] = ship.muzzle();
+      bullet.vx = ship.vx;
+      bullet.vy = ship.vy;
+      bullet.rotationAngle = ship.rotationAngle;
+      bullet.acceleration = 60;
+      bullets.push(bullet)
+      // isFiringLaser = true;
       break;
   }
 });
@@ -44,13 +59,16 @@ window.addEventListener('keydown', event => {
 window.addEventListener('keyup', event => {
   switch (event.key) {
     case 'ArrowLeft':
-      isRotatingCounterClockWise = false;
+      isTurningLeft = false;
       break;
     case 'ArrowRight':
-      isRotatingClockWise = false;
+      isTurningRight = false;
+      break;
+    case 'ArrowUp':
+      isAccelerating = false;
       break;
     case ' ':
-      isFiringLaser = false;
+      // isFiringLaser = false;
       break;
   }
 });
@@ -67,15 +85,29 @@ const draw = (polygons, appearance = {}) => {
   ctx.restore();
 };
 
+let lastTime = performance.now();
+
 const gameLoop = () => {
-  if (isRotatingCounterClockWise) {
-    ship.rotationAngle += 0.02;
-  }
-  if (isRotatingClockWise) {
-    ship.rotationAngle -= 0.02;
+  const now = performance.now();
+  const elapsed = now - lastTime;
+  lastTime = now;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (isAccelerating) {
+    ship.acceleration = 4;
+  } else {
+    ship.acceleration = 0;
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (isTurningLeft && !isTurningRight) {
+    ship.rotationAngle += 0.08;
+  } else if (!isTurningLeft && isTurningRight) {
+    ship.rotationAngle -= 0.08;
+  }
+
+  ship.rotate(elapsed);
+  ship.accelerate(elapsed);
+  ship.move(elapsed);
 
   draw(ship.transformed(), {
     lineWidth: 1,
@@ -85,21 +117,23 @@ const gameLoop = () => {
     fillStyle: 'White',
   });
 
-  if (isFiringLaser) {
-    const laser = ship.laserSegment();
-    draw(laser, {
-      lineWidth: 1,
-      strokeStyle: 'Red',
-      shadowColor: 'Red',
-      shadowBlur: 3,
-    })
-
-    asteroids = asteroids.filter(asteroid => {
-      return !asteroid.doesIntersect(laser)
-    });
-  }
+  // if (isFiringLaser) {
+  //   const laser = ship.laserSegment();
+  //   draw(laser, {
+  //     lineWidth: 1,
+  //     strokeStyle: 'Red',
+  //     shadowColor: 'Red',
+  //     shadowBlur: 3,
+  //   });
+  //
+  //   asteroids = asteroids.filter(asteroid => {
+  //     return !asteroid.doesIntersect(laser);
+  //   });
+  // }
 
   asteroids.forEach(asteroid => {
+    asteroid.move(elapsed);
+    asteroid.rotate(elapsed);
     draw(asteroid.transformed(), {
       lineWidth: 1,
       strokeStyle: 'Green',
@@ -108,6 +142,35 @@ const gameLoop = () => {
       fillStyle: 'White',
     });
   });
+
+  bullets = bullets.filter(bullet => {
+    return bullet.travelled < bullet.reach;
+  });
+
+  asteroids = asteroids.filter(asteroid => {
+    for (const bullet of bullets) {
+      if (asteroid.doesCollide(bullet)) {
+        bullet.reach = 0;
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  bullets.forEach(bullet => {
+    bullet.accelerate(elapsed);
+    bullet.move(elapsed);
+
+    draw(bullet.transformed(), {
+      lineWidth: 1,
+      strokeStyle: 'Red',
+      shadowColor: 'Red',
+      shadowBlur: 3,
+    });
+  })
+
+
 
   requestAnimationFrame(gameLoop);
 };

@@ -15,3 +15,10 @@ export const zip = (...arrays) => {
     return arrays.map(array => array[i]);
   });
 }
+
+export const remove = (arr, item) => {
+  const i = arr.indexOf(item);
+  if (i > -1) {
+    arr.splice(i, 1);
+  }
+}
