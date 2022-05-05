@@ -8,8 +8,7 @@ import { length } from './libs/vector';
 import Bullet from './models/bullet';
 
 const ship = new Ship();
-const asteroidCount = 10;
-let asteroids = range(asteroidCount).map(i => {
+let asteroids = range(10).map(i => {
   const asteroid = new Asteroid();
   asteroid.x = randomInt(-9, 9);
   asteroid.y = randomInt(-9, 9);
@@ -49,9 +48,8 @@ window.addEventListener('keydown', event => {
       bullet.vx = ship.vx;
       bullet.vy = ship.vy;
       bullet.rotationAngle = ship.rotationAngle;
-      bullet.acceleration = 60;
+      bullet.acceleration = 40;
       bullets.push(bullet)
-      // isFiringLaser = true;
       break;
   }
 });
@@ -94,15 +92,15 @@ const gameLoop = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (isAccelerating) {
-    ship.acceleration = 4;
+    ship.acceleration = 12;
   } else {
     ship.acceleration = 0;
   }
 
   if (isTurningLeft && !isTurningRight) {
-    ship.rotationAngle += 0.08;
+    ship.rotationAngle += 0.1;
   } else if (!isTurningLeft && isTurningRight) {
-    ship.rotationAngle -= 0.08;
+    ship.rotationAngle -= 0.1;
   }
 
   ship.rotate(elapsed);
@@ -111,10 +109,10 @@ const gameLoop = () => {
 
   draw(ship.transformed(), {
     lineWidth: 1,
-    strokeStyle: 'Green',
-    shadowColor: 'Green',
-    shadowBlur: 3,
-    fillStyle: 'White',
+    strokeStyle: 'Blue',
+    // shadowColor: 'Blue',
+    // shadowBlur: 3,
+    fillStyle: 'Lavender',
   });
 
   // if (isFiringLaser) {
@@ -131,31 +129,47 @@ const gameLoop = () => {
   //   });
   // }
 
+
+
+
+
+  const scatteredAsteroids = [];
+
+  asteroids = asteroids.filter(asteroid => {
+    for (const bullet of bullets) {
+      if (asteroid.doesCollide(bullet)) {
+        bullet.reach = 0;
+        if (asteroid.generation < 3) {
+          range(3).forEach(_ => {
+            const chip = new Asteroid(asteroid.generation + 1);
+            chip.x = asteroid.x;
+            chip.y = asteroid.y;
+            scatteredAsteroids.push(chip);
+          })
+        }
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  asteroids = [...asteroids, ...scatteredAsteroids];
+
   asteroids.forEach(asteroid => {
     asteroid.move(elapsed);
     asteroid.rotate(elapsed);
     draw(asteroid.transformed(), {
       lineWidth: 1,
       strokeStyle: 'Green',
-      shadowColor: 'Green',
-      shadowBlur: 3,
-      fillStyle: 'White',
+      // shadowColor: 'Green',
+      // shadowBlur: 3,
+      fillStyle: 'Honeydew',
     });
   });
 
   bullets = bullets.filter(bullet => {
     return bullet.travelled < bullet.reach;
-  });
-
-  asteroids = asteroids.filter(asteroid => {
-    for (const bullet of bullets) {
-      if (asteroid.doesCollide(bullet)) {
-        bullet.reach = 0;
-        return false;
-      }
-    }
-
-    return true;
   });
 
   bullets.forEach(bullet => {
@@ -165,8 +179,8 @@ const gameLoop = () => {
     draw(bullet.transformed(), {
       lineWidth: 1,
       strokeStyle: 'Red',
-      shadowColor: 'Red',
-      shadowBlur: 3,
+      // shadowColor: 'Red',
+      // shadowBlur: 3,
     });
   })
 
