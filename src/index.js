@@ -7,14 +7,8 @@ import { fillAndStroke, shade, toPixels, trace } from './utils/canvas';
 import { length } from './libs/vector';
 import Bullet from './models/bullet';
 
-const ship = new Ship();
-let asteroids = range(10).map(i => {
-  const asteroid = new Asteroid();
-  asteroid.x = randomInt(-9, 9);
-  asteroid.y = randomInt(-9, 9);
-  return asteroid;
-});
-
+let ship = null;
+let asteroids = [];
 let bullets = [];
 
 document.body.appendChild(stage('<canvas id=\'game-action-layer\'/>'));
@@ -22,7 +16,6 @@ const canvas = document.getElementById('game-action-layer');
 canvas.setAttribute('height', '400');
 canvas.setAttribute('width', '400');
 
-let isFiringLaser = false;
 let isAccelerating = false;
 let isTurningLeft = false;
 let isTurningRight = false;
@@ -74,6 +67,17 @@ window.addEventListener('keyup', event => {
 const ctx = canvas.getContext('2d');
 const mapCoordinates = toPixels(canvas.width, canvas.height, 20, 20);
 
+const newRound = () => {
+  ship = new Ship();
+  asteroids = range(10).map(i => {
+    const asteroid = new Asteroid();
+    asteroid.x = randomInt(-9, 9);
+    asteroid.y = randomInt(-9, 9);
+    return asteroid;
+  });
+  bullets = [];
+}
+
 const draw = (polygons, appearance = {}) => {
   const polygon = polygons.map(([x, y]) => mapCoordinates(x, y));
   ctx.save();
@@ -110,32 +114,17 @@ const gameLoop = () => {
   draw(ship.transformed(), {
     lineWidth: 1,
     strokeStyle: 'Blue',
-    // shadowColor: 'Blue',
-    // shadowBlur: 3,
     fillStyle: 'Lavender',
   });
 
-  // if (isFiringLaser) {
-  //   const laser = ship.laserSegment();
-  //   draw(laser, {
-  //     lineWidth: 1,
-  //     strokeStyle: 'Red',
-  //     shadowColor: 'Red',
-  //     shadowBlur: 3,
-  //   });
-  //
-  //   asteroids = asteroids.filter(asteroid => {
-  //     return !asteroid.doesIntersect(laser);
-  //   });
-  // }
-
-
-
-
-
   const scatteredAsteroids = [];
+  let crash = false;
 
   asteroids = asteroids.filter(asteroid => {
+    if (asteroid.doesCollide(ship)) {
+      crash = true;
+    }
+
     for (const bullet of bullets) {
       if (asteroid.doesCollide(bullet)) {
         bullet.reach = 0;
@@ -162,8 +151,6 @@ const gameLoop = () => {
     draw(asteroid.transformed(), {
       lineWidth: 1,
       strokeStyle: 'Green',
-      // shadowColor: 'Green',
-      // shadowBlur: 3,
       fillStyle: 'Honeydew',
     });
   });
@@ -179,14 +166,15 @@ const gameLoop = () => {
     draw(bullet.transformed(), {
       lineWidth: 1,
       strokeStyle: 'Red',
-      // shadowColor: 'Red',
-      // shadowBlur: 3,
     });
-  })
+  });
 
-
+  if (crash) {
+    newRound();
+  }
 
   requestAnimationFrame(gameLoop);
 };
 
+newRound();
 gameLoop();
