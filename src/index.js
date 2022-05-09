@@ -8,9 +8,9 @@ import { field, length, toCartesian } from './libs/vector';
 import Bullet from './models/bullet';
 import Particle from './models/particle';
 import './style/main.css';
-import laserAudioUrl from './audio/laser.mp3';
-import explosionAudioUrl from './audio/explosion.mp3';
-import rocketAudioUrl from './audio/rocket.mp3';
+// import laserAudioUrl from './audio/laser.mp3';
+// import explosionAudioUrl from './audio/explosion.mp3';
+// import rocketAudioUrl from './audio/rocket.mp3';
 import BlackHole from './models/black-hole';
 import ExplosionParticle from './models/explosion-particle';
 
@@ -21,7 +21,7 @@ let thrustParticles = [];
 let explosionParticles = [];
 let blackHoles = [];
 
-const laserAudio = new Audio(laserAudioUrl);
+// const laserAudio = new Audio(laserAudioUrl);
 
 document.body.appendChild(stage('<canvas id=\'game-action-layer\'/>'));
 const canvas = document.getElementById('game-action-layer');
@@ -167,7 +167,7 @@ const gameLoop = () => {
 
     for (const bullet of bullets) {
       if (asteroid.doesCollide(bullet)) {
-        const explosionAudio = new Audio(explosionAudioUrl);
+        // const explosionAudio = new Audio(explosionAudioUrl);
         // explosionAudio.play();
         const explosionParticlesCount = randomInt(30,50) * (4 - asteroid.generation);
         for (let i = 0; i < explosionParticlesCount; i++) {

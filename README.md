@@ -1,5 +1,5 @@
 # Asteroids
 
-Simple proof of concept Asteroids game with zero third party frameworks... Just built using handcrafted linear algebra, and an HTML 2D Canvas. 
+Simple (~30KB) proof of concept Asteroids game with zero third party dependencies... Just built using handcrafted linear algebra, native Web APIs, and ❤️ 
 
-The implementation is heavily inspired by the content of the excellent book [Math for Programmers](https://www.manning.com/books/math-for-programmers)
+The implementation is heavily inspired by the excellent book [Math for Programmers](https://www.manning.com/books/math-for-programmers)
