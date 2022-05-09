@@ -215,3 +215,8 @@ export const doSegmentsIntersect = (s1, s2) => {
     distance(v1, i) <= d2 &&
     distance(v2, i) <= d2;
 };
+
+export const field = (source, x, y) => {
+  const relativePosition = [x - source.x, y - source.y];
+  return scale(source.force, relativePosition)[0];
+}

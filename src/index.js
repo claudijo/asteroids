@@ -4,23 +4,24 @@ import Asteroid from './models/asteroid';
 import { random, randomInt } from './libs/number';
 import stage from './templates/stage';
 import { fillAndStroke, shade, toPixels, trace } from './utils/canvas';
-import { length, toCartesian } from './libs/vector';
+import { field, length, toCartesian } from './libs/vector';
 import Bullet from './models/bullet';
 import Particle from './models/particle';
 import './style/main.css';
 import laserAudioUrl from './audio/laser.mp3';
 import explosionAudioUrl from './audio/explosion.mp3';
 import rocketAudioUrl from './audio/rocket.mp3';
+import BlackHole from './models/black-hole';
+import ExplosionParticle from './models/explosion-particle';
 
 let ship = null;
 let asteroids = [];
 let bullets = [];
 let thrustParticles = [];
-let explostionParticles = [];
+let explosionParticles = [];
+let blackHoles = [];
 
 const laserAudio = new Audio(laserAudioUrl);
-
-
 
 document.body.appendChild(stage('<canvas id=\'game-action-layer\'/>'));
 const canvas = document.getElementById('game-action-layer');
@@ -83,7 +84,7 @@ const mapCoordinates = toPixels(canvas.width, canvas.height, 20, 20);
 
 const newRound = () => {
   ship = new Ship();
-  asteroids = range(6).map(i => {
+  asteroids = range(8).map(i => {
     const asteroid = new Asteroid();
     asteroid.x = randomInt(-9, 9);
     asteroid.y = randomInt(-9, 9);
@@ -91,6 +92,9 @@ const newRound = () => {
   });
   bullets = [];
   thrustParticles = [];
+  blackHoles = range(1).map(i => {
+    return new BlackHole(-0.1);
+  })
 }
 
 const draw = (polygons, appearance = {}) => {
@@ -110,6 +114,15 @@ const gameLoop = () => {
   lastTime = now;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+
+  blackHoles.map(blackHole => {
+    draw(blackHole.transformed(), {
+      fillStyle: 'Black',
+      shadowColor: 'Gray',
+      shadowBlur: 16,
+    });
+  })
+
   if (isAccelerating) {
     ship.acceleration = 12;
 
@@ -124,8 +137,6 @@ const gameLoop = () => {
       thrustParticle.acceleration = randomInt(20,30);
       thrustParticles.push(thrustParticle);
     }
-
-
   } else {
     ship.acceleration = 0;
   }
@@ -160,7 +171,7 @@ const gameLoop = () => {
         // explosionAudio.play();
         const explosionParticlesCount = randomInt(30,50) * (4 - asteroid.generation);
         for (let i = 0; i < explosionParticlesCount; i++) {
-          const explosionParticle = new Particle();
+          const explosionParticle = new ExplosionParticle();
           explosionParticle.x = asteroid.x + random(-0.2, 0.2)
           explosionParticle.y = asteroid.y + random(-0.2, 0.2)
           const rotationAngle = random(0, Math.PI * 2);
@@ -170,9 +181,8 @@ const gameLoop = () => {
           explosionParticle.reach = randomInt(2,5);
           explosionParticle.rotationAngle = rotationAngle;
           explosionParticle.acceleration = randomInt(-3,-1);
-          explostionParticles.push(explosionParticle);
+          explosionParticles.push(explosionParticle);
         }
-
 
         bullet.reach = 0;
         if (asteroid.generation < 3) {
@@ -191,6 +201,19 @@ const gameLoop = () => {
   });
 
   asteroids = [...asteroids, ...scatteredAsteroids];
+
+  blackHoles.forEach(blackHole => {
+    asteroids.forEach(asteroid => {
+      const [gx, gy] = field(blackHole,  asteroid.x, asteroid.y);
+      asteroid.vx += gx * (elapsed / 1000);
+      asteroid.vy += gy * (elapsed / 1000);
+    })
+
+    const [gx, gy] = field(blackHole,  ship.x, ship.y);
+    ship.vx += gx * (elapsed / 1000);
+    ship.vy += gy * (elapsed / 1000);
+  });
+
 
   asteroids.forEach(asteroid => {
     asteroid.move(elapsed);
@@ -213,8 +236,6 @@ const gameLoop = () => {
     draw(bullet.transformed(), {
       lineWidth: 1,
       strokeStyle: 'Red',
-      shadowColor: 'Pink',
-      shadowBlur: 4,
     });
   });
 
@@ -233,18 +254,19 @@ const gameLoop = () => {
     });
   });
 
-  explostionParticles = explostionParticles.filter(particle => {
+  explosionParticles = explosionParticles.filter(particle => {
     return particle.travelled < particle.reach;
   });
 
-  explostionParticles.forEach(particle => {
+  explosionParticles.forEach(particle => {
     particle.accelerate(elapsed);
     particle.move(elapsed);
+    const green = randomInt(200,255);
     draw(particle.transformed(), {
-      lineWidth: 1,
-      strokeStyle: `rgba(255,${randomInt(128,255)},0,${(1 - particle.travelled / particle.reach)})`,
+      fillStyle: `rgba(${green - 15},${green},${green - 15},${(1 - particle.travelled / particle.reach)})`,
       shadowColor: 'White',
       shadowBlur: 2,
+
     });
   })
 

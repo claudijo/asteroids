@@ -14,7 +14,7 @@ export default class Polygon {
     this.travelled = 0;
   }
 
-  move(ms) {
+  move(ms, ) {
     const dx = this.vx * ms / 1000;
     const dy = this.vy * ms / 1000;
     [this.x, this.y] = add([this.x, this.y], [dx, dy]);
