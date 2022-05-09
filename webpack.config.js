@@ -10,6 +10,7 @@ const commonConfig = merge([
   parts.page({ title: 'Vector' }),
   parts.extractCSS({ loaders: cssLoaders }),
   parts.loadImages({ limit: 15000 }),
+  parts.loadSound({ limit: 15000 }),
 
   // https://survivejs.com/webpack/loading/fonts/
   parts.loadFonts({ limit: 15000 }),

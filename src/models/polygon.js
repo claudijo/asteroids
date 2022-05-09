@@ -51,10 +51,8 @@ export default class Polygon {
     return length([this.vx, this.vy]);
   }
 
-
-
-  transformed() {
-    return this.points
+  transformed(points = this.points) {
+    return points
       .map(point => rotate(this.rotationAngle, point))
       .map(point => add([this.x, this.y], point));
   }

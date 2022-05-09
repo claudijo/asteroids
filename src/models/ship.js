@@ -9,6 +9,10 @@ export default class Ship extends Polygon {
     return this.transformed()[0];
   }
 
+  tail() {
+    return this.transformed([[-0.25, 0]])[0];
+  }
+
   // laserSegment() {
   //   const dist = 20 * Math.sqrt(2);
   //   const [x, y] = this.transformed()[0]; // Coordinates for the tip of the ship

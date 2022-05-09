@@ -96,6 +96,18 @@ exports.loadImages = ({ limit } = {}) => ({
   },
 });
 
+exports.loadSound = ({ limit } = {}) => ({
+  module: {
+    rules: [
+      {
+        test: /\.(mp3|wav)$/,
+        type: 'asset',
+        parser: { dataUrlCondition: { maxSize: limit } },
+      },
+    ],
+  },
+});
+
 exports.loadFonts = ({ limit } = {}) => ({
   module: {
     rules: [
